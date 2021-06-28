@@ -1,0 +1,43 @@
+version: "3.9"
+services:
+  app:
+    restart: unless-stopped
+    build: .
+    volumes:
+      - ./app.py:/app/app.py
+    env_file:
+      - .env
+    networks:
+      - app
+
+  postgres:
+    image: postgres:13.2-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - database:/var/lib/postgresql/data
+    networks:
+      - app
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    networks:
+      - app
+      - proxy
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+      - VIRTUAL_HOST=${VIRTUAL_HOST_ADMINER}
+    expose:
+      - 8080
+
+volumes:
+  database:
+
+networks:
+  app:
+  proxy:
+    external: true
